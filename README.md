@@ -9,11 +9,11 @@ App móvil en **React Native (Expo SDK 58, RN 0.88, TypeScript)**. Calcula en el
 | Entregable | Ubicación |
 |---|---|
 | Código fuente | este repositorio (`src/` app, `proxy/` backend) |
-| Build de prueba | APK en *Releases* del repo · o `npx expo run:android` (Metro) |
+| Build de prueba | `TP7-SatelliteTracker.apk` en *Releases* del repo (arm64-v8a + x86_64) · o `npx expo run:android` (Metro) |
 | Documento técnico del modelo orbital | [`docs/modelo-orbital.md`](docs/modelo-orbital.md) |
 | Informe de validación | [`docs/informe-validacion.md`](docs/informe-validacion.md) |
 | Decisiones sobre fuentes de datos | [`docs/decisiones-fuentes-de-datos.md`](docs/decisiones-fuentes-de-datos.md) |
-| Video demo | enlace en *Releases* · guion en [`docs/guion-video.md`](docs/guion-video.md) |
+| Video demo | `TP7-SatelliteTracker-demo.mp4` (2:50) en *Releases* · guion en [`docs/guion-video.md`](docs/guion-video.md) |
 
 ## Requisitos funcionales
 

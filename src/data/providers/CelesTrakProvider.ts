@@ -3,6 +3,7 @@ import { httpJson } from '../http/httpJson';
 import { CLIENT_LIMITS, RateLimiter } from '../http/rateLimiter';
 import {
   NotSupportedError,
+  ProviderHttpError,
   type CatalogGroup,
   type DataProvider,
   type ValidationSample,
@@ -49,12 +50,18 @@ export class CelesTrakProvider implements DataProvider {
   }
 
   async getCatalog(group: CatalogGroup, limit: number): Promise<OrbitalRecord[]> {
-    const url =
-      group === 'starlink'
-        ? this.url(`/supgp/starlink?limit=${limit}`, '/supplemental/sup-gp.php?FILE=starlink&FORMAT=json')
-        : this.url(`/group/${group}?limit=${limit}`, `/gp.php?GROUP=${DIRECT_GROUP[group]}&FORMAT=json`);
-    const records = await this.get<OrbitalRecord[]>(url);
-    return records.slice(0, limit);
+    const gpUrl = this.url(`/group/${group}?limit=${limit}`, `/gp.php?GROUP=${DIRECT_GROUP[group]}&FORMAT=json`);
+    if (group !== 'starlink') return (await this.get<OrbitalRecord[]>(gpUrl)).slice(0, limit);
+    try {
+      const supGp = this.url(`/supgp/starlink?limit=${limit}`, '/supplemental/sup-gp.php?FILE=starlink&FORMAT=json');
+      return (await this.get<OrbitalRecord[]>(supGp)).slice(0, limit);
+    } catch (error) {
+      // CelesTrak answers 403 when the same file is re-downloaded within 2 h: use the regular GP set.
+      if (error instanceof ProviderHttpError && error.status === 403) {
+        return (await this.get<OrbitalRecord[]>(gpUrl)).slice(0, limit);
+      }
+      throw error;
+    }
   }
 
   async getOrbitalData(noradId: number): Promise<OrbitalRecord | null> {

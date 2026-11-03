@@ -11,6 +11,8 @@ export interface AppConfig {
   n2yoApiKey?: string;
   fetchImpl?: typeof fetch;
   logger?: boolean;
+  /** Disk snapshot for the response cache (survives restarts). */
+  cachePath?: string;
 }
 
 const HOUR = 3_600_000;
@@ -51,7 +53,7 @@ export function buildApp(config: AppConfig = {}) {
   const limiters = Object.fromEntries(
     Object.entries(PROVIDER_LIMITS).map(([name, windows]) => [name, new RateLimiter(windows)]),
   ) as Record<ProviderName, RateLimiter>;
-  const cache = new TtlCache<unknown>();
+  const cache = new TtlCache<unknown>({ persistPath: config.cachePath });
   const spaceTrack = new SpaceTrackClient(
     config.spaceTrackIdentity,
     config.spaceTrackPassword,

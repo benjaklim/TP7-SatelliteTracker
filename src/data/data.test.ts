@@ -92,6 +92,16 @@ describe('providers', () => {
     expect(fetchImpl.mock.calls[1][0]).toBe('http://proxy/v1/celestrak/group/stations?limit=10');
   });
 
+  it('CelesTrak falls back to the GP Starlink group when SupGP answers 403', async () => {
+    const fetchImpl = jest
+      .fn()
+      .mockImplementationOnce(async () => new Response('Please limit requests to once every 2 hours', { status: 403 }))
+      .mockImplementationOnce(async () => json([ISS]));
+    const records = await new CelesTrakProvider({ fetchImpl }).getCatalog('starlink', 5);
+    expect(records).toEqual([ISS]);
+    expect(fetchImpl.mock.calls[1][0]).toContain('GROUP=starlink');
+  });
+
   it('Where the ISS at? only serves the ISS', async () => {
     const wtia = new WhereTheIssProvider();
     await expect(wtia.getOrbitalData(41866)).rejects.toBeInstanceOf(NotSupportedError);

@@ -5,6 +5,7 @@ const app = buildApp({
   spaceTrackPassword: process.env.SPACETRACK_PASSWORD,
   n2yoApiKey: process.env.N2YO_API_KEY,
   logger: true,
+  cachePath: process.env.CACHE_PATH ?? '.cache/responses.json',
 });
 
 const port = Number(process.env.PORT ?? 8787);

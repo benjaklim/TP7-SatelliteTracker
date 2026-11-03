@@ -42,7 +42,7 @@ describe('RateLimiter', () => {
 describe('TtlCache', () => {
   it('deduplicates concurrent loads and expires entries', async () => {
     let now = 0;
-    const cache = new TtlCache<number>(() => now);
+    const cache = new TtlCache<number>({ now: () => now });
     let loads = 0;
     const load = async () => ++loads;
     const [a, b] = await Promise.all([cache.getOrLoad('k', 100, load), cache.getOrLoad('k', 100, load)]);

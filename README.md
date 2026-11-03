@@ -138,6 +138,26 @@ Genera `docs/validation-results.md` y `docs/validation-results.json`.
 ### 5. APK
 
 ```bash
+npx expo prebuild --platform android
 cd android
 ./gradlew assembleRelease   # android/app/build/outputs/apk/release/app-release.apk
 ```
+
+#### Windows: límite de 260 caracteres en rutas
+
+React Native 0.88 genera rutas de objetos CMake que repiten la ruta absoluta del proyecto. En una carpeta profunda (por ejemplo `C:\Users\…\Desarrollo movile\TP7-SatelliteTracker`), el build nativo falla con `ninja: error: mkdir(...): No such file or directory`.
+
+Hay dos opciones:
+
+- **Clonar en una ruta corta** (`C:\tp7`) y mover el *staging* de CMake con la variable que lee `plugins/with-short-cxx-staging.js`:
+
+  ```powershell
+  git clone https://github.com/benjaklim/TP7-SatelliteTracker.git C:\tp7
+  cd C:\tp7; npm ci; npx expo prebuild --platform android
+  $env:ANDROID_CXX_STAGING = "C:\cx"
+  cd android; .\gradlew.bat assembleRelease
+  ```
+
+- **Habilitar rutas largas** en Windows (`LongPathsEnabled = 1`, requiere administrador).
+
+Solo la compilación nativa necesita la ruta corta. Metro (`npx expo start --dev-client`) puede correr desde cualquier carpeta.

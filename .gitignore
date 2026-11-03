@@ -55,3 +55,6 @@ coverage/
 
 # proxy response cache
 proxy/.cache/
+
+# local tooling
+.atl/

@@ -58,3 +58,6 @@ proxy/.cache/
 
 # local tooling
 .atl/
+
+# build artifacts (published as GitHub Release assets)
+/release/

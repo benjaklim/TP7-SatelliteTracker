@@ -57,7 +57,7 @@ Una búsqueda ingenua (evaluar la elevación cada pocos segundos durante 72 h) c
 
 **Exactitud.** El test `passFinder.test.ts` compara contra un barrido de fuerza bruta a 1 s durante 24 h. Coinciden la cantidad de pases, AOS y LOS (±2 s) y la elevación máxima (±0,05°).
 
-**Costo medido** en Node 24 (V8 con JIT): 6,7 ms para 72 h de la ISS (13 pases). 300 propagaciones toman 1,5 ms. Hermes interpreta bytecode sin JIT y es un orden de magnitud más lento; por eso el cálculo es cooperativo. El tiempo real en el dispositivo se muestra en la pestaña *Passes*.
+**Costo medido** en Node 24 (V8 con JIT): 6,7 ms para 72 h de la ISS (13 pases). 300 propagaciones toman 1,5 ms. En el emulador Android (Hermes, sin JIT) la misma búsqueda tomó **482 ms**, unas 70 veces más; por eso el cálculo es cooperativo y la UI no se congela. El tiempo se muestra en la pestaña *Passes*.
 
 Casos borde:
 
@@ -113,7 +113,7 @@ La elevación mínima es configurable (por defecto 10°, en línea con la práct
 
 ## 8. Rendimiento
 
-- **Capa de constelación:** se usa **una sola fuente GeoJSON + `CircleLayer`** (render nativo en GPU), no un `Marker` por satélite. Las posiciones se propagan en lotes de 100 que ceden el hilo, con un lote completo cada 2 s. El tiempo por lote se muestra en el mapa.
+- **Capa de constelación:** se usa **una sola fuente GeoJSON + `CircleLayer`** (render nativo en GPU), no un `Marker` por satélite. Las posiciones se propagan en lotes de 100 que ceden el hilo, con un lote completo cada 2 s. El tiempo por lote se muestra en el mapa: **52 ms para 300 Starlink** en el emulador (Hermes), dentro de un ciclo de 2 s.
 - **Marcador del satélite:** se recalcula cada 1 s. La animación de pulso corre con `useNativeDriver`.
 - **Pases:** cálculo cooperativo (ver §4), recalculado cada 10 min o al cambiar satélite/observador/umbral.
 

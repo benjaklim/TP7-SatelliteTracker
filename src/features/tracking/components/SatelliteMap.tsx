@@ -59,7 +59,7 @@ export const SatelliteMap = forwardRef<CameraRef, SatelliteMapProps>(function Sa
 ) {
   return (
     <Map style={StyleSheet.absoluteFill} mapStyle={MAP_STYLE_URL} attribution logo={false} compass={false}>
-      <Camera ref={cameraRef} initialViewState={{ center: position ?? [observer.longitude, observer.latitude], zoom: 1.2 }} />
+      <Camera ref={cameraRef} initialViewState={{ center: position ?? [observer.longitude, observer.latitude], zoom: 0.4 }} />
 
       <GeoJSONSource id="constellation" data={constellation ?? EMPTY_COLLECTION}>
         <Layer

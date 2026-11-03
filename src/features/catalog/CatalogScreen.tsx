@@ -55,8 +55,9 @@ export function CatalogScreen() {
 
   const setGroup = (g: CatalogGroup) => setRequest({ kind: 'group', group: g });
 
-  const search = () => {
-    const q = query.trim();
+  /** Uses the submitted text: `query` state may lag one keystroke behind on fast input. */
+  const search = (text: string) => {
+    const q = text.trim();
     if (q.length < 2 && !/^\d+$/.test(q)) return;
     setRequest({ kind: 'search', query: q });
   };
@@ -72,7 +73,7 @@ export function CatalogScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          onSubmitEditing={search}
+          onSubmitEditing={(e) => search(e.nativeEvent.text)}
           placeholder="Search by name or NORAD ID (e.g. NOAA 19, 25544)"
           placeholderTextColor={colors.muted}
           returnKeyType="search"

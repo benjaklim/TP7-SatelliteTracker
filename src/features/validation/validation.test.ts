@@ -1,3 +1,5 @@
+import { degreesLat, degreesLong, eciToGeodetic, gstime, propagate } from 'satellite.js';
+
 import { createSatellite, stateAt } from '../../core';
 import { ISS, T0 } from '../../core/orbital/__fixtures__/omm';
 import { compareWithSample, toMarkdownTable } from './validation';
@@ -32,5 +34,21 @@ describe('validation', () => {
     const expected = 111.2 * Math.cos((s.latitude * Math.PI) / 180);
     expect(row.groundErrorKm).toBeCloseTo(expected, -1);
     expect(toMarkdownTable([row])).toContain('| ISS (ZARYA) | shifted |');
+  });
+
+  it('reproduces the N2YO timing convention (propagated 1 s later, rotated at the timestamp)', () => {
+    // Synthetic N2YO sample: TEME state at T0 + 1 s, rotated with GMST at T0.
+    const pv = propagate(iss.satrec, new Date(T0 + 1000))!;
+    const g = eciToGeodetic(pv.position, gstime(new Date(T0)));
+    const row = compareWithSample(iss, 'N2YO', {
+      provider: 'n2yo',
+      noradId: 25544,
+      timestamp: T0,
+      latitude: degreesLat(g.latitude),
+      longitude: degreesLong(g.longitude),
+      altitudeKm: g.height,
+    })!;
+    expect(row.error3dKm).toBeCloseTo(7.66, 0);
+    expect(row.clockCorrectedErrorKm!).toBeLessThan(1e-6);
   });
 });

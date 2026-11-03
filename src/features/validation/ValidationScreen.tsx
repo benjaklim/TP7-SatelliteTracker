@@ -91,6 +91,11 @@ export function ValidationScreen() {
               {formatTime(r.timestamp)} · ground {r.groundErrorKm.toFixed(2)} km · Δalt {r.altitudeDiffKm.toFixed(2)} km ·
               elements {r.epochAgeHours.toFixed(1)} h old
             </Text>
+            {r.clockCorrectedErrorKm !== undefined && (
+              <Text style={[ui.muted, { color: colors.success }]}>
+                With the N2YO 1 s propagation lag accounted for: {(r.clockCorrectedErrorKm * 1000).toFixed(0)} m
+              </Text>
+            )}
             <Text style={ui.muted}>
               ours {r.ours.latitude.toFixed(3)}, {r.ours.longitude.toFixed(3)}, {r.ours.altitudeKm.toFixed(1)} km — theirs{' '}
               {r.theirs.latitude.toFixed(3)}, {r.theirs.longitude.toFixed(3)}, {r.theirs.altitudeKm.toFixed(1)} km

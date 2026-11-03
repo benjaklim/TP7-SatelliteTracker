@@ -102,7 +102,7 @@ export function TrackingScreen() {
               label={
                 constellation.error
                   ? 'Starlink unavailable'
-                  : `Starlink SupGP: ${constellation.count} sats · ${constellation.computeMs} ms/batch`
+                  : `Starlink${constellation.dataset ? ` ${constellation.dataset}` : ''}: ${constellation.count} sats · ${constellation.computeMs} ms/batch`
               }
             />
           )}

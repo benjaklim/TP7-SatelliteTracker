@@ -11,6 +11,10 @@ import {
 
 const DIRECT = 'https://celestrak.org/NORAD/elements';
 
+export type OrbitalDataset = 'SupGP' | 'GP';
+/** Extra OMM key recording which CelesTrak set a Starlink record came from (kept in the cache). */
+export const DATASET_KEY = 'TP7_DATASET';
+
 const DIRECT_GROUP: Record<CatalogGroup, string> = {
   stations: 'stations',
   starlink: 'starlink',
@@ -52,13 +56,15 @@ export class CelesTrakProvider implements DataProvider {
   async getCatalog(group: CatalogGroup, limit: number): Promise<OrbitalRecord[]> {
     const gpUrl = this.url(`/group/${group}?limit=${limit}`, `/gp.php?GROUP=${DIRECT_GROUP[group]}&FORMAT=json`);
     if (group !== 'starlink') return (await this.get<OrbitalRecord[]>(gpUrl)).slice(0, limit);
+    const tag = (records: OrbitalRecord[], dataset: OrbitalDataset) =>
+      records.slice(0, limit).map((r) => ({ ...r, [DATASET_KEY]: dataset }));
     try {
       const supGp = this.url(`/supgp/starlink?limit=${limit}`, '/supplemental/sup-gp.php?FILE=starlink&FORMAT=json');
-      return (await this.get<OrbitalRecord[]>(supGp)).slice(0, limit);
+      return tag(await this.get<OrbitalRecord[]>(supGp), 'SupGP');
     } catch (error) {
       // CelesTrak answers 403 when the same file is re-downloaded within 2 h: use the regular GP set.
       if (error instanceof ProviderHttpError && error.status === 403) {
-        return (await this.get<OrbitalRecord[]>(gpUrl)).slice(0, limit);
+        return tag(await this.get<OrbitalRecord[]>(gpUrl), 'GP');
       }
       throw error;
     }

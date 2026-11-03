@@ -98,7 +98,7 @@ describe('providers', () => {
       .mockImplementationOnce(async () => new Response('Please limit requests to once every 2 hours', { status: 403 }))
       .mockImplementationOnce(async () => json([ISS]));
     const records = await new CelesTrakProvider({ fetchImpl }).getCatalog('starlink', 5);
-    expect(records).toEqual([ISS]);
+    expect(records).toEqual([{ ...ISS, TP7_DATASET: 'GP' }]);
     expect(fetchImpl.mock.calls[1][0]).toContain('GROUP=starlink');
   });
 

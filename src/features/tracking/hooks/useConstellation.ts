@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { createSatellite, stateAt, type Satellite } from '../../../core';
+import { DATASET_KEY } from '../../../data/providers/CelesTrakProvider';
 import { getOrchestrator } from '../../../services/container';
 
 export interface ConstellationState {
@@ -8,6 +9,8 @@ export interface ConstellationState {
   count: number;
   computeMs: number;
   fetchedAt: number | null;
+  /** 'SupGP' (operator ephemerides) or 'GP' fallback, null when unknown (e.g. Space-Track). */
+  dataset: string | null;
   error: string | null;
 }
 
@@ -27,6 +30,7 @@ export function useConstellation(enabled: boolean, limit: number): Constellation
     count: 0,
     computeMs: 0,
     fetchedAt: null,
+    dataset: null,
     error: null,
   });
   const satellites = useRef<Satellite[]>([]);
@@ -77,7 +81,13 @@ export function useConstellation(enabled: boolean, limit: number): Constellation
             return [];
           }
         });
-        setState((s) => ({ ...s, fetchedAt: result.fetchedAt, error: null }));
+        const dataset = result.data[0]?.[DATASET_KEY];
+        setState((s) => ({
+          ...s,
+          fetchedAt: result.fetchedAt,
+          dataset: typeof dataset === 'string' ? dataset : null,
+          error: null,
+        }));
         void tick();
       } catch (e) {
         if (!cancelled) setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));

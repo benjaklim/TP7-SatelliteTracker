@@ -120,7 +120,7 @@ adb emu geo fix -58.3816 -34.6037
 ### 3. Tests y calidad
 
 ```bash
-npm test                 # 41 tests: motor orbital, geodesia, proveedores, orquestador, validación
+npm test                 # 42 tests: motor orbital, geodesia, proveedores, orquestador, validación
 npm run typecheck
 cd proxy && npm test     # rate limiter, caché, rutas, manejo de credenciales
 ```

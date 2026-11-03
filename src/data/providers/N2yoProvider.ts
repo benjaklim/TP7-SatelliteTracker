@@ -1,6 +1,6 @@
 import type { Observer, OrbitalRecord } from '../../core';
 import { tleToOmm } from '../formats/tle';
-import { httpJson } from '../http/httpJson';
+import { httpJson, PROXY_TIMEOUT_MS } from '../http/httpJson';
 import { CLIENT_LIMITS, RateLimiter } from '../http/rateLimiter';
 import { NotSupportedError, type DataProvider, type ValidationSample } from '../types';
 
@@ -34,6 +34,7 @@ export class N2yoProvider implements DataProvider {
       limiter: this.limiter,
       fetchImpl: this.fetchImpl,
       retries: 1,
+      timeoutMs: PROXY_TIMEOUT_MS,
     });
   }
 

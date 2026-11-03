@@ -1,5 +1,5 @@
 import type { Observer, OrbitalRecord } from '../../core';
-import { httpJson } from '../http/httpJson';
+import { httpJson, PROXY_TIMEOUT_MS } from '../http/httpJson';
 import { CLIENT_LIMITS, RateLimiter } from '../http/rateLimiter';
 import {
   NotSupportedError,
@@ -41,6 +41,7 @@ export class SpaceTrackProvider implements DataProvider {
       limiter: this.limiter,
       fetchImpl: this.fetchImpl,
       retries: 1,
+      timeoutMs: PROXY_TIMEOUT_MS,
     });
   }
 

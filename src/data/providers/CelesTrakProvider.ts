@@ -1,5 +1,5 @@
 import type { Observer, OrbitalRecord } from '../../core';
-import { httpJson } from '../http/httpJson';
+import { httpJson, PROXY_TIMEOUT_MS } from '../http/httpJson';
 import { CLIENT_LIMITS, RateLimiter } from '../http/rateLimiter';
 import {
   NotSupportedError,
@@ -46,7 +46,15 @@ export class CelesTrakProvider implements DataProvider {
   }
 
   private get<T>(url: string) {
-    return httpJson<T>(url, { provider: this.id, limiter: this.limiter, fetchImpl: this.options.fetchImpl });
+    // The proxy is local: fail fast so the orchestrator reaches the direct source quickly.
+    const viaProxy = Boolean(this.options.proxyUrl);
+    return httpJson<T>(url, {
+      provider: this.id,
+      limiter: this.limiter,
+      fetchImpl: this.options.fetchImpl,
+      retries: viaProxy ? 1 : 2,
+      timeoutMs: viaProxy ? PROXY_TIMEOUT_MS : 15_000,
+    });
   }
 
   private url(proxyPath: string, directPath: string) {

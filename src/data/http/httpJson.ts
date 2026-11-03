@@ -10,6 +10,9 @@ export interface HttpOptions {
   fetchImpl?: typeof fetch;
 }
 
+/** Timeout for calls to the local proxy: fail fast so fallbacks kick in quickly. */
+export const PROXY_TIMEOUT_MS = 6_000;
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const retryable = (status: number) => status === 0 || status === 429 || status >= 500;
 

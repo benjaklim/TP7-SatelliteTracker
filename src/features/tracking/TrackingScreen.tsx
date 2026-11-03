@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
+  footprintOutline,
   footprintPolygon,
   footprintRadiusKm,
   groundTrack,
@@ -50,7 +51,12 @@ export function TrackingScreen() {
     [satellite, showGroundTrack, trackBucket],
   );
   const footprint =
-    state && showFootprint ? footprintPolygon(state.latitude, state.longitude, state.altitudeKm, minElevation) : null;
+    state && showFootprint
+      ? {
+          fill: footprintPolygon(state.latitude, state.longitude, state.altitudeKm, minElevation),
+          outline: footprintOutline(state.latitude, state.longitude, state.altitudeKm, minElevation),
+        }
+      : null;
 
   const lng = state?.longitude;
   const lat = state?.latitude;

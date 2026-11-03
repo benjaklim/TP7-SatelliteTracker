@@ -4,7 +4,7 @@ import { createSatellite } from '../orbital/satellite';
 import type { LngLat } from '../orbital/types';
 import { normalizeLongitude, splitLineAtAntimeridian, splitPolygonAtAntimeridian } from './antimeridian';
 import { distance3dKm, haversineKm } from './distance';
-import { footprintCentralAngle, footprintPolygon, footprintRadiusKm } from './footprint';
+import { footprintCentralAngle, footprintOutline, footprintPolygon, footprintRadiusKm } from './footprint';
 
 const maxJump = (line: LngLat[]) =>
   line.slice(1).reduce((m, p, i) => Math.max(m, Math.abs(p[0] - line[i][0])), 0);
@@ -75,6 +75,19 @@ describe('footprint', () => {
   it('splits a footprint centred near the antimeridian', () => {
     const polygons = footprintPolygon(0, 179, 420, 10);
     expect(polygons).toHaveLength(2);
+  });
+
+  it('outlines a footprint across the antimeridian without vertical seam segments', () => {
+    // The ring starts east of 180°, crosses west and comes back: east, west and east pieces.
+    const outline = footprintOutline(0, 179, 420, 10);
+    expect(outline).toHaveLength(3);
+    for (const line of outline) {
+      expect(maxJump(line)).toBeLessThan(180);
+      for (let i = 1; i < line.length; i++) {
+        const seam = Math.abs(line[i][0]) === 180 && line[i][0] === line[i - 1][0];
+        expect(seam).toBe(false);
+      }
+    }
   });
 
   it('closes a footprint that contains the pole', () => {

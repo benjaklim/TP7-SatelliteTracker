@@ -15,4 +15,8 @@ export function footprintFeature(polygons: LngLat[][][]): GeoJSON.Feature<GeoJSO
   return { type: 'Feature', properties: {}, geometry: { type: 'MultiPolygon', coordinates: polygons } };
 }
 
+export function outlineFeature(lines: LngLat[][]): GeoJSON.Feature<GeoJSON.MultiLineString> {
+  return { type: 'Feature', properties: {}, geometry: { type: 'MultiLineString', coordinates: lines } };
+}
+
 export const EMPTY_COLLECTION: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };

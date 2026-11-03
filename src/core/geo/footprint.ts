@@ -1,6 +1,11 @@
 import { DEG, EARTH_MEAN_RADIUS_KM } from '../orbital/constants';
 import type { LngLat } from '../orbital/types';
-import { splitPolygonAtAntimeridian, unwrapLongitudes } from './antimeridian';
+import {
+  normalizeLongitude,
+  splitLineAtAntimeridian,
+  splitPolygonAtAntimeridian,
+  unwrapLongitudes,
+} from './antimeridian';
 
 /**
  * Earth central angle (radians) of the coverage circle of a satellite at `altitudeKm`
@@ -32,6 +37,27 @@ export function destination(latDeg: number, lonDeg: number, bearingDeg: number, 
       Math.cos(angle) - Math.sin(phi1) * sinPhi2,
     );
   return [lambda2 / DEG, phi2 / DEG];
+}
+
+/**
+ * Coverage circle outline as polylines split at the antimeridian. Drawing the
+ * outline from the split polygons would show their artificial ±180° edges.
+ */
+export function footprintOutline(
+  latitude: number,
+  longitude: number,
+  altitudeKm: number,
+  minElevationDeg: number,
+  segments = 96,
+): LngLat[][] {
+  const angle = footprintCentralAngle(altitudeKm, minElevationDeg);
+  if (angle <= 0) return [];
+  const ring: LngLat[] = [];
+  for (let i = 0; i <= segments; i++) {
+    const [lon, lat] = destination(latitude, longitude, (360 * i) / segments, angle);
+    ring.push([normalizeLongitude(lon), lat]);
+  }
+  return splitLineAtAntimeridian(ring);
 }
 
 /**

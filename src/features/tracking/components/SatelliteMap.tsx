@@ -11,12 +11,13 @@ import { Animated, Easing, StyleSheet, Text, useAnimatedValue, View } from 'reac
 
 import type { GroundTrack, LngLat, Observer } from '../../../core';
 import { colors, MAP_STYLE_URL } from '../../../shared/theme';
-import { EMPTY_COLLECTION, footprintFeature, groundTrackFeatures } from '../mapGeometry';
+import { EMPTY_COLLECTION, footprintFeature, groundTrackFeatures, outlineFeature } from '../mapGeometry';
 
 export interface SatelliteMapProps {
   position: LngLat | null;
   groundTrack: GroundTrack | null;
-  footprint: LngLat[][][] | null;
+  /** Fill polygons and seam-free outline, both split at the antimeridian. */
+  footprint: { fill: LngLat[][][]; outline: LngLat[][] } | null;
   constellation: GeoJSON.FeatureCollection<GeoJSON.Point> | null;
   observer: Observer;
   satelliteName: string;
@@ -73,8 +74,10 @@ export const SatelliteMap = forwardRef<CameraRef, SatelliteMapProps>(function Sa
         />
       </GeoJSONSource>
 
-      <GeoJSONSource id="footprint" data={footprint ? footprintFeature(footprint) : EMPTY_COLLECTION}>
+      <GeoJSONSource id="footprint" data={footprint ? footprintFeature(footprint.fill) : EMPTY_COLLECTION}>
         <Layer type="fill" id="footprint-fill" paint={{ 'fill-color': colors.footprint, 'fill-opacity': 0.14 }} />
+      </GeoJSONSource>
+      <GeoJSONSource id="footprint-edge" data={footprint ? outlineFeature(footprint.outline) : EMPTY_COLLECTION}>
         <Layer
           type="line"
           id="footprint-outline"

@@ -54,7 +54,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "./plugins/with-short-cxx-staging"
     ],
     "extra": {
       "proxyUrl": "http://10.0.2.2:8787"

@@ -1,0 +1,47 @@
+import type { OrbitalRecord } from '../types';
+
+/** CelesTrak GP records captured on 2026-11-03 (fixed so tests are deterministic). */
+export const ISS: OrbitalRecord = {
+  OBJECT_NAME: 'ISS (ZARYA)',
+  OBJECT_ID: '1998-067A',
+  EPOCH: '2026-11-02T18:09:49.393152',
+  MEAN_MOTION: 15.49154261,
+  ECCENTRICITY: 0.0007124,
+  INCLINATION: 51.6331,
+  RA_OF_ASC_NODE: 334.3796,
+  ARG_OF_PERICENTER: 340.7366,
+  MEAN_ANOMALY: 19.3352,
+  EPHEMERIS_TYPE: 0,
+  CLASSIFICATION_TYPE: 'U',
+  NORAD_CAT_ID: 25544,
+  ELEMENT_SET_NO: 999,
+  REV_AT_EPOCH: 59323,
+  BSTAR: 0.0001062,
+  MEAN_MOTION_DOT: 5.437e-5,
+  MEAN_MOTION_DDOT: 0,
+};
+
+export const GOES16: OrbitalRecord = {
+  OBJECT_NAME: 'GOES 16',
+  OBJECT_ID: '2016-071A',
+  EPOCH: '2026-11-02T21:02:39.675840',
+  MEAN_MOTION: 1.00270694,
+  ECCENTRICITY: 0.0002613,
+  INCLINATION: 0.6814,
+  RA_OF_ASC_NODE: 83.5804,
+  ARG_OF_PERICENTER: 165.1907,
+  MEAN_ANOMALY: 4.3883,
+  EPHEMERIS_TYPE: 0,
+  CLASSIFICATION_TYPE: 'U',
+  NORAD_CAT_ID: 41866,
+  ELEMENT_SET_NO: 999,
+  REV_AT_EPOCH: 3649,
+  BSTAR: 0,
+  MEAN_MOTION_DOT: -9.8e-7,
+  MEAN_MOTION_DDOT: 0,
+};
+
+/** Observer used across tests: Buenos Aires. */
+export const BUENOS_AIRES = { latitude: -34.6037, longitude: -58.3816, altitudeKm: 0.025 };
+
+export const T0 = Date.parse('2026-11-03T12:00:00Z');

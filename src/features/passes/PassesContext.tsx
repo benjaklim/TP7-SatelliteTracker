@@ -15,6 +15,13 @@ interface PassesState {
   computeMs: number;
 }
 
+interface Computed {
+  key: string;
+  passes: Pass[];
+  computedAt: number;
+  computeMs: number;
+}
+
 const PassesContext = createContext<PassesState>({ passes: [], computing: false, computedAt: null, computeMs: 0 });
 
 /**
@@ -25,7 +32,7 @@ export function PassesProvider({ children }: { children: ReactNode }) {
   const { satellite } = useSelectedSatellite();
   const observer = trackingStore.use((s) => s.observer);
   const minElevation = settingsStore.use((s) => s.minElevation);
-  const [state, setState] = useState<PassesState>({ passes: [], computing: false, computedAt: null, computeMs: 0 });
+  const [computed, setComputed] = useState<Computed | null>(null);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -33,14 +40,15 @@ export function PassesProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
+  // Identifies the inputs of a computation; results for older inputs are ignored.
+  const key = satellite
+    ? `${satellite.noradId}:${satellite.epoch}:${observer.latitude}:${observer.longitude}:${minElevation}:${tick}`
+    : null;
+
   useEffect(() => {
-    if (!satellite) {
-      setState({ passes: [], computing: false, computedAt: null, computeMs: 0 });
-      return;
-    }
+    if (!satellite || !key) return;
     const signal = { cancelled: false };
     const started = Date.now();
-    setState((s) => ({ ...s, computing: true }));
     findPassesAsync(
       satellite,
       observer,
@@ -48,15 +56,27 @@ export function PassesProvider({ children }: { children: ReactNode }) {
       signal,
     ).then((passes) => {
       if (!signal.cancelled) {
-        setState({ passes, computing: false, computedAt: Date.now(), computeMs: Date.now() - started });
+        setComputed({ key, passes, computedAt: Date.now(), computeMs: Date.now() - started });
       }
     });
     return () => {
       signal.cancelled = true;
     };
-  }, [satellite, observer, minElevation, tick]);
+    // `key` captures every input that matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
-  return <PassesContext.Provider value={state}>{children}</PassesContext.Provider>;
+  const fresh = computed !== null && computed.key === key;
+  // While recomputing for the same satellite, keep showing the previous passes.
+  const sameSatellite = computed !== null && satellite !== null && computed.key.startsWith(`${satellite.noradId}:`);
+  const value: PassesState = {
+    passes: sameSatellite ? computed.passes : [],
+    computing: key !== null && !fresh,
+    computedAt: sameSatellite ? computed.computedAt : null,
+    computeMs: sameSatellite ? computed.computeMs : 0,
+  };
+
+  return <PassesContext.Provider value={value}>{children}</PassesContext.Provider>;
 }
 
 export function usePasses(): PassesState {

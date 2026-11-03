@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -39,10 +39,8 @@ export function PassesScreen() {
   const [selectedAos, setSelectedAos] = useState<number | null>(null);
   const selected = upcoming.find((p) => p.aos === selectedAos) ?? upcoming[0];
 
-  const track = useMemo(
-    () => (satellite && selected ? passTrack(satellite, observer, selected) : []),
-    [satellite, observer, selected],
-  );
+  // ~60 propagations for a 10-minute pass: cheap enough to recompute on each 1 s tick.
+  const track = satellite && selected ? passTrack(satellite, observer, selected) : [];
   const live = satellite ? lookAnglesAt(satellite, observer, now) : null;
   const isWatched = satellite ? watched.some((w) => w.noradId === satellite.noradId) : false;
 

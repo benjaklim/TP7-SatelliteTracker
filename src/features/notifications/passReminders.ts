@@ -41,6 +41,7 @@ export async function setupNotifications(): Promise<boolean> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(PASS_CHANNEL_ID, {
       name: 'Satellite passes',
+      // eslint-disable-next-line import/namespace -- enum re-exported via `export *`; checked by tsc
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#38BDF8',

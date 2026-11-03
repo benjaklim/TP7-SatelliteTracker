@@ -1,11 +1,10 @@
-import '../features/notifications/backgroundRefresh';
-
 import * as Notifications from 'expo-notifications';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+// Importing this module also defines the background task at module scope.
 import { refreshWatchedPasses, registerBackgroundRefresh } from '../features/notifications/backgroundRefresh';
 import { setupNotifications } from '../features/notifications/passReminders';
 import { PassesProvider } from '../features/passes/PassesContext';

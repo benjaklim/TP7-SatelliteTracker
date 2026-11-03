@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,13 +12,8 @@ import { trackingStore } from '../tracking/trackingStore';
 import { DEFAULT_PROXY_URL, settingsStore } from './settingsStore';
 
 function useProviderHealth(): ProviderHealth[] {
-  const [health, setHealth] = useState<ProviderHealth[]>(() => getOrchestrator().getHealth());
-  useEffect(() => {
-    const orchestrator = getOrchestrator();
-    setHealth(orchestrator.getHealth());
-    return orchestrator.subscribe(() => setHealth(orchestrator.getHealth()));
-  }, []);
-  return health;
+  const orchestrator = getOrchestrator();
+  return useSyncExternalStore(orchestrator.subscribe, orchestrator.getHealth);
 }
 
 export function SettingsScreen() {

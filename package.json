@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.1",
+    "eslint-config-expo": "~58.0.4",
     "expo": "~58.0.22",
     "expo-background-task": "~58.0.12",
     "expo-build-properties": "~58.0.12",
@@ -29,6 +30,7 @@
     "@types/geojson": "^7946.0.16",
     "@types/jest": "30.0.0",
     "@types/react": "~19.3.0",
+    "eslint": "^9.39.5",
     "jest": "~30.5.2",
     "jest-expo": "~58.0.13",
     "tsx": "^4.23.15",
@@ -38,7 +40,7 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint",
+    "lint": "eslint src scripts plugins",
     "test": "jest",
     "validate": "tsx scripts/validate.ts"
   },

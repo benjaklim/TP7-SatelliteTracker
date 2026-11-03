@@ -6,8 +6,8 @@ import {
   Marker,
   type CameraRef,
 } from '@maplibre/maplibre-react-native';
-import { forwardRef, useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { forwardRef, useEffect } from 'react';
+import { Animated, Easing, StyleSheet, Text, useAnimatedValue, View } from 'react-native';
 
 import type { GroundTrack, LngLat, Observer } from '../../../core';
 import { colors, MAP_STYLE_URL } from '../../../shared/theme';
@@ -23,7 +23,7 @@ export interface SatelliteMapProps {
 }
 
 function PulsingSatellite({ name }: { name: string }) {
-  const pulse = useRef(new Animated.Value(0)).current;
+  const pulse = useAnimatedValue(0);
   useEffect(() => {
     const loop = Animated.loop(
       Animated.timing(pulse, { toValue: 1, duration: 1600, easing: Easing.out(Easing.quad), useNativeDriver: true }),

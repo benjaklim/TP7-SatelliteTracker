@@ -24,9 +24,7 @@ export function createStore<T extends object>(initial: T, onChange?: (state: T) 
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    use: (selector) =>
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useSyncExternalStore(store.subscribe, () => selector(state)),
+    use: (selector) => useSyncExternalStore(store.subscribe, () => selector(state)),
   };
   return store;
 }

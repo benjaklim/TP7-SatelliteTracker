@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,6 +7,7 @@ import { parseEpoch, type OrbitalRecord } from '../../core';
 import { CATALOG_GROUPS, type CatalogGroup, type FetchResult } from '../../data/types';
 import { getOrchestrator } from '../../services/container';
 import { formatAge } from '../../shared/format';
+import { useNow } from '../../shared/hooks';
 import { colors, spacing } from '../../shared/theme';
 import { Badge, Chip, styles as ui } from '../../shared/ui';
 import { selectSatellite, trackingStore } from '../tracking/trackingStore';
@@ -14,44 +15,56 @@ import { selectSatellite, trackingStore } from '../tracking/trackingStore';
 const GROUP_LIMIT = 300;
 
 /** RF-01 search by name / NORAD ID, RF-08 filter by constellation. */
-export function CatalogScreen() {
-  const [group, setGroup] = useState<CatalogGroup | null>('stations');
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState<FetchResult<OrbitalRecord[]> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const selected = trackingStore.use((s) => s.selectedNoradId);
+type CatalogRequest = { kind: 'group'; group: CatalogGroup } | { kind: 'search'; query: string };
 
-  const run = useCallback(async (task: () => Promise<FetchResult<OrbitalRecord[]>>) => {
-    setLoading(true);
-    setError(null);
-    try {
-      setResult(await task());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+interface CatalogResponse {
+  key: string;
+  result: FetchResult<OrbitalRecord[]> | null;
+  error: string | null;
+}
+
+export function CatalogScreen() {
+  const [request, setRequest] = useState<CatalogRequest>({ kind: 'group', group: 'stations' });
+  const [query, setQuery] = useState('');
+  const [response, setResponse] = useState<CatalogResponse | null>(null);
+  const selected = trackingStore.use((s) => s.selectedNoradId);
+  const now = useNow(60_000);
+  const key = request.kind === 'group' ? `group:${request.group}` : `search:${request.query}`;
+  const group = request.kind === 'group' ? request.group : null;
 
   useEffect(() => {
-    if (group) void run(() => getOrchestrator().getCatalog(group, { limit: GROUP_LIMIT }));
-  }, [group, run]);
+    let cancelled = false;
+    const orchestrator = getOrchestrator();
+    const task =
+      request.kind === 'group'
+        ? orchestrator.getCatalog(request.group, { limit: GROUP_LIMIT })
+        : orchestrator.search(request.query);
+    task
+      .then((result) => !cancelled && setResponse({ key, result, error: null }))
+      .catch((e) => !cancelled && setResponse({ key, result: null, error: e instanceof Error ? e.message : String(e) }));
+    return () => {
+      cancelled = true;
+    };
+    // `key` uniquely identifies `request`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  const loading = response?.key !== key;
+  const result = loading ? null : response.result;
+  const error = loading ? null : response.error;
+
+  const setGroup = (g: CatalogGroup) => setRequest({ kind: 'group', group: g });
 
   const search = () => {
     const q = query.trim();
     if (q.length < 2 && !/^\d+$/.test(q)) return;
-    setGroup(null);
-    void run(() => getOrchestrator().search(q));
+    setRequest({ kind: 'search', query: q });
   };
 
   const pick = (record: OrbitalRecord) => {
     selectSatellite(Number(record.NORAD_CAT_ID), record.OBJECT_NAME);
     router.navigate('/');
   };
-
-  const now = Date.now();
 
   return (
     <SafeAreaView style={ui.screen} edges={['top']}>

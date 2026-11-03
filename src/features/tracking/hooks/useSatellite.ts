@@ -16,45 +16,69 @@ export interface SatelliteData {
 export const STALE_EPOCH_HOURS = 72;
 const TTL_CHECK_MS = 60_000;
 
+interface Loaded {
+  noradId: number;
+  satellite: Satellite | null;
+  meta: SatelliteData['meta'];
+  error: string | null;
+}
+
 /**
  * Loads orbital elements through the orchestrator (cache → providers → stale cache)
  * and re-checks the TTL every minute so data refreshes automatically (RF-09).
  */
 export function useSatellite(noradId: number): SatelliteData {
-  const [satellite, setSatellite] = useState<Satellite | null>(null);
-  const [meta, setMeta] = useState<SatelliteData['meta']>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
-    async (force = false) => {
-      setLoading(true);
+    async (force: boolean) => {
       try {
         const result = await getOrchestrator().getOrbitalData(noradId, { force });
-        setSatellite(createSatellite(result.data));
-        setMeta({ source: result.source, fetchedAt: result.fetchedAt, stale: result.stale });
-        setError(null);
+        setLoaded({
+          noradId,
+          satellite: createSatellite(result.data),
+          meta: { source: result.source, fetchedAt: result.fetchedAt, stale: result.stale },
+          error: null,
+        });
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        setLoaded((prev) => ({
+          noradId,
+          satellite: prev?.noradId === noradId ? prev.satellite : null,
+          meta: prev?.noradId === noradId ? prev.meta : null,
+          error: e instanceof Error ? e.message : String(e),
+        }));
       } finally {
-        setLoading(false);
+        setRefreshing(false);
       }
     },
     [noradId],
   );
 
   useEffect(() => {
-    setSatellite(null);
-    void load();
+    void load(false);
   }, [load]);
 
+  // Only data for the currently selected satellite is exposed.
+  const current = loaded?.noradId === noradId ? loaded : null;
+  const fetchedAt = current?.meta?.fetchedAt;
+
   useEffect(() => {
-    if (!meta) return;
+    if (fetchedAt === undefined) return;
     const id = setInterval(() => {
-      if (!getOrchestrator().isFresh(meta.fetchedAt)) void load(true);
+      if (!getOrchestrator().isFresh(fetchedAt)) void load(true);
     }, TTL_CHECK_MS);
     return () => clearInterval(id);
-  }, [meta, load]);
+  }, [fetchedAt, load]);
 
-  return { satellite, meta, loading, error, refresh: (force) => void load(force) };
+  return {
+    satellite: current?.satellite ?? null,
+    meta: current?.meta ?? null,
+    loading: !current || refreshing,
+    error: current?.error ?? null,
+    refresh: (force = false) => {
+      setRefreshing(true);
+      void load(force);
+    },
+  };
 }

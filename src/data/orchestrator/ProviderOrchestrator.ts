@@ -67,14 +67,15 @@ export class ProviderOrchestrator {
     return this.ttlMs;
   }
 
-  getHealth(): ProviderHealth[] {
-    return [...this.health.values()];
-  }
+  /** Stable snapshot (same reference until something changes), safe for useSyncExternalStore. */
+  getHealth = (): ProviderHealth[] => this.healthSnapshot;
 
-  subscribe(listener: () => void): () => void {
+  private healthSnapshot: ProviderHealth[] = [];
+
+  subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
-  }
+  };
 
   private record(provider: DataProvider, error?: unknown) {
     this.health.set(provider.label, {
@@ -83,6 +84,7 @@ export class ProviderOrchestrator {
       lastError: error ? (error instanceof Error ? error.message : String(error)) : undefined,
       at: this.now(),
     });
+    this.healthSnapshot = [...this.health.values()];
     this.listeners.forEach((l) => l());
   }
 

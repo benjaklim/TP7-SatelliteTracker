@@ -183,11 +183,23 @@ export function buildApp(config: AppConfig = {}) {
     },
   );
 
+  app.get<{ Params: { id: string } }>('/v1/n2yo/tle/:id', async (request, reply) => {
+    if (!config.n2yoApiKey) throw new UpstreamError('N2YO API key not configured', 503);
+    const id = parseNorad(request.params.id);
+    return cached(reply, `n2yo:tle:${id}`, TTL.orbital, () =>
+      getJson('n2yo', `https://api.n2yo.com/rest/v1/satellite/tle/${id}&apiKey=${config.n2yoApiKey}`),
+    );
+  });
+
   // --- Where the ISS at? (ISS only, ~1 req/s) ----------------------------------
+  const WTIA = 'https://api.wheretheiss.at/v1/satellites/25544';
+
   app.get('/v1/wtia/iss', async (_request, reply) =>
-    cached(reply, 'wtia:iss', TTL.wtia, () =>
-      getJson('wtia', 'https://api.wheretheiss.at/v1/satellites/25544?units=kilometers'),
-    ),
+    cached(reply, 'wtia:iss', TTL.wtia, () => getJson('wtia', `${WTIA}?units=kilometers`)),
+  );
+
+  app.get('/v1/wtia/iss/tle', async (_request, reply) =>
+    cached(reply, 'wtia:iss:tle', TTL.orbital, () => getJson('wtia', `${WTIA}/tles?format=json`)),
   );
 
   return app;

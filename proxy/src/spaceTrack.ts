@@ -56,6 +56,9 @@ export class SpaceTrackClient {
 /** GP query paths (OMM JSON, latest element set, non-decayed objects). */
 export const spaceTrackQueries = {
   byNorad: (ids: number[]) => `class/gp/NORAD_CAT_ID/${ids.join(',')}/orderby/NORAD_CAT_ID/format/json`,
+  /** Historical element sets (gp_history): meant for occasional analysis queries only. */
+  history: (id: number, days: number) =>
+    `class/gp_history/NORAD_CAT_ID/${id}/EPOCH/%3Enow-${days}/orderby/EPOCH%20asc/format/json`,
   byNamePrefix: (prefix: string, limit: number) =>
     `class/gp/OBJECT_NAME/${encodeURIComponent(prefix)}~~/decay_date/null-val/epoch/%3Enow-10/orderby/NORAD_CAT_ID/limit/${limit}/format/json`,
 };

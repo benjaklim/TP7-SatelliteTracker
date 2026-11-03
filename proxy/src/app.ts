@@ -165,6 +165,16 @@ export function buildApp(config: AppConfig = {}) {
     return cached(reply, `spacetrack:${path}`, TTL.orbital, () => spaceTrack.query(path));
   });
 
+  app.get<{ Params: { id: string }; Querystring: { days?: string } }>(
+    '/v1/spacetrack/history/:id',
+    async (request, reply) => {
+      const days = Math.min(30, parseLimit(request.query.days, 10));
+      const path = spaceTrackQueries.history(parseNorad(request.params.id), days);
+      // History does not change: cache it for a day to stay far below the hourly budget.
+      return cached(reply, `spacetrack:${path}`, 24 * HOUR, () => spaceTrack.query(path));
+    },
+  );
+
   // --- N2YO (API key stays here) ---------------------------------------------
   app.get<{ Params: { id: string }; Querystring: { lat?: string; lon?: string; alt?: string } }>(
     '/v1/n2yo/positions/:id',
